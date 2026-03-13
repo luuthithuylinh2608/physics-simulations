@@ -1,0 +1,205 @@
+:root {
+    --bg-color: #e3f2fd;
+    --primary-blue: #2196f3;
+    --accent-orange: #ff9800;
+    --accent-red: #f44336;
+    --dark-gray: #37474f;
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+header {
+    padding: 20px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+}
+
+h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.5rem;
+    color: var(--dark-gray);
+    font-weight: 700;
+}
+
+main {
+    flex: 1;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#canvas-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.controls {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+    background: var(--glass-bg);
+    padding: 20px 30px;
+    border-radius: 20px;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: var(--card-shadow);
+    z-index: 20;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--dark-gray);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+select,
+button {
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+select:hover,
+button:hover {
+    border-color: var(--primary-blue);
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
+}
+
+button.active {
+    background: var(--primary-blue);
+    color: white;
+    border-color: var(--primary-blue);
+}
+
+.meter-container {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--glass-bg);
+    padding: 20px;
+    border-radius: 20px;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: var(--card-shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 100px;
+}
+
+.meter-label {
+    writing-mode: vertical-rl;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--dark-gray);
+    margin-bottom: 10px;
+}
+
+.meter-bar-wrapper {
+    height: 200px;
+    width: 30px;
+    background: #eee;
+    border-radius: 15px;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid rgba(0, 0, 0, 0.05);
+}
+
+#meter-fill {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 10%;
+    background: #90a4ae;
+    transition: height 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s ease;
+}
+
+#meter-fill.active {
+    background: #4caf50;
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+}
+
+.instruction-toast {
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    pointer-events: none;
+    opacity: 0.8;
+    transition: opacity 0.5s;
+}
+
+.btn-home {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    padding: 10px 20px;
+    background: white;
+    border: 2px solid #2196F3;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #2196F3;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 9999;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.btn-home:hover {
+    background: #2196F3;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(33, 150, 243, 0.3);
+}

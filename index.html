@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Thí Nghiệm Vật Lý Ảo - Khám Phá Khoa Học</title>
+    <meta name="description"
+        content="Nền tảng học tập vật lý tương tác với các thí nghiệm về khúc xạ, phản xạ âm, từ trường và ô nhiễm tiếng ồn.">
+    <meta name="keywords" content="vật lý, thí nghiệm ảo, khúc xạ, từ trường, âm thanh, giáo dục">
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --secondary: #f43f5e;
+            --accent: #10b981;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-hover: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Giữ nguyên một số cấu trúc CSS cũ theo yêu cầu để dự phòng */
+        .buttons-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        /* Reset & Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 60px 20px;
+            overflow-x: hidden;
+        }
+
+        /* Background Animation Elements */
+        .blob {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+            filter: blur(80px);
+            opacity: 0.15;
+            z-index: -1;
+            border-radius: 50%;
+            animation: move 20s infinite alternate;
+        }
+
+        .blob-2 {
+            top: -100px;
+            right: -100px;
+            background: radial-gradient(circle, var(--secondary) 0%, transparent 70%);
+            animation-delay: -5s;
+        }
+
+        .blob-3 {
+            bottom: -100px;
+            left: -100px;
+            background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+            animation-delay: -10s;
+        }
+
+        @keyframes move {
+            from {
+                transform: translate(0, 0) scale(1);
+            }
+
+            to {
+                transform: translate(100px, 100px) scale(1.2);
+            }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            max-width: 800px;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 800;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Experiments Grid */
+        .experiments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            width: 100%;
+            max-width: 1200px;
+            z-index: 1;
+        }
+
+        .experiment-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px 30px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .experiment-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.03) 100%);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .experiment-card:hover {
+            transform: translateY(-10px);
+            background: var(--card-hover);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .experiment-card:hover::before {
+            opacity: 1;
+        }
+
+        .icon-container {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 24px;
+            transition: transform 0.4s ease;
+            position: relative;
+        }
+
+        .experiment-card:hover .icon-container {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* Specific icon glow effects */
+        .card-refraction .icon-container {
+            color: #60a5fa;
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.2);
+        }
+
+        .card-noise .icon-container {
+            color: #f87171;
+            box-shadow: 0 0 20px rgba(248, 113, 113, 0.2);
+        }
+
+        .card-reflection .icon-container {
+            color: #fbbf24;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+        }
+
+        .card-magnetic .icon-container {
+            color: #34d399;
+            box-shadow: 0 0 20px rgba(52, 211, 153, 0.2);
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: -0.01em;
+        }
+
+        p.description {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .btn-launch {
+            margin-top: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .experiment-card:hover .btn-launch {
+            background: #fff;
+            color: #0f172a;
+        }
+
+        footer {
+            margin-top: 80px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            body {
+                padding: 40px 15px;
+            }
+
+            h1 {
+                margin-bottom: 10px;
+            }
+
+            .experiments-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="blob"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <header>
+        <h1>Phòng Thí Nghiệm Vật Lý</h1>
+        <p class="subtitle">Khám phá thế giới vật lý thông qua các mô phỏng tương tác sinh động và trực quan.</p>
+    </header>
+
+    <main class="experiments-grid">
+        <!-- Thí nghiệm Khúc xạ Ánh sáng -->
+        <a href="Khuc_xa/index.html" class="experiment-card card-refraction">
+            <div class="icon-container">🌈</div>
+            <h2>Khúc xạ Ánh sáng</h2>
+            <p class="description">Khám phá hiện tượng bẻ cong của tia sáng khi đi qua các môi trường khác nhau.</p>
+            <div class="btn-launch">
+                Bắt đầu thí nghiệm
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </div>
+        </a>
+
+        <!-- Thí nghiệm Ô nhiễm Tiếng ồn -->
+        <a href="O_nhiem_tieng_on/index.html" class="experiment-card card-noise">
+            <div class="icon-container">🔊</div>
+            <h2>Ô nhiễm Tiếng ồn</h2>
+            <p class="description">Phân tích tác động của âm thanh và các biện pháp giảm thiểu tiếng ồn trong đô thị.
+            </p>
+            <div class="btn-launch">
+                Bắt đầu thí nghiệm
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </div>
+        </a>
+
+        <!-- Thí nghiệm Phản xạ Âm -->
+        <a href="Phan_xa_am/index.html" class="experiment-card card-reflection">
+            <div class="icon-container">🦇</div>
+            <h2>Phản xạ Âm</h2>
+            <p class="description">Tìm hiểu cách âm thanh dội lại khi gặp vật cản và ứng dụng của sóng âm.</p>
+            <div class="btn-launch">
+                Bắt đầu thí nghiệm
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </div>
+        </a>
+
+        <!-- Thí nghiệm Từ trường -->
+        <a href="Thi_Nghiem_Tu_Truong_Hoan_Thien/index.html" class="experiment-card card-magnetic">
+            <div class="icon-container">🧲</div>
+            <h2>Từ trường</h2>
+            <p class="description">Quan sát các đường sức từ và cách la bàn định hướng trong không gian.</p>
+            <div class="btn-launch">
+                Bắt đầu thí nghiệm
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </div>
+        </a>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Virtual Physics Lab. Designed for Interactive Learning.</p>
+    </footer>
+
+    <!-- Giữ nguyên cấu trúc ẩn để dự phòng CSS cũ nếu cần -->
+    <div class="buttons-container" style="display: none;">
+        <a href="Khuc_xa/index.html"></a>
+        <a href="O_nhiem_tieng_on/index.html"></a>
+        <a href="Phan_xa_am/index.html"></a>
+        <a href="Thi_Nghiem_Tu_Truong_Hoan_Thien/index.html"></a>
+    </div>
+</body>
+
+</html>

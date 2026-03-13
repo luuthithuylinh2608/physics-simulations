@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thí nghiệm Phản xạ Âm - Vật lý</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <a href="../index.html" class="btn-home">🏠 Quay lại Trang chủ</a>
+
+    <header>
+        <h1>Mô phỏng Phản xạ Âm</h1>
+        <div style="font-size: 0.9rem; color: #555;">Tiết 14 - Vật lý 7</div>
+    </header>
+
+    <main>
+        <div id="canvas-container"></div>
+
+        <div class="instruction-toast">Kéo chuột hoặc dùng thanh trượt để xoay tấm phản xạ</div>
+
+        <div class="meter-container">
+            <div class="meter-label">Cường độ âm</div>
+            <div class="meter-bar-wrapper">
+                <div id="meter-fill"></div>
+            </div>
+            <div id="status-icon" style="font-size: 1.5rem;">❓</div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Vật liệu</label>
+                <select id="material-select">
+                    <option value="metal">Kim loại (Cứng / Nhẵn)</option>
+                    <option value="wood">Gỗ (Cứng / Phẳng)</option>
+                    <option value="sponge">Xốp (Mềm / Gồ ghề)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Góc tấm phản xạ</label>
+                <input type="range" id="plate-rotation" min="0" max="360" value="0" style="width: 150px;">
+            </div>
+            <div class="control-group">
+                <label>Phụ trợ</label>
+                <button id="toggle-normal">Hiện Pháp Tuyến</button>
+            </div>
+            <div class="control-group">
+                <label>Âm thanh</label>
+                <button id="toggle-mute">🔊 Bật</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <script src="sketch.js"></script>
+</body>
+
+</html>
