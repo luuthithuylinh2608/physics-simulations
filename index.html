@@ -4,10 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Thí Nghiệm Vật Lý Ảo - Khám Phá Khoa Học</title>
-    <meta name="description"
-        content="Nền tảng học tập vật lý tương tác với các thí nghiệm về khúc xạ, phản xạ âm, từ trường và ô nhiễm tiếng ồn.">
-    <meta name="keywords" content="vật lý, thí nghiệm ảo, khúc xạ, từ trường, âm thanh, giáo dục">
+    <title>MÔ PHỎNG VẬT LÝ 7</title>
+    <meta name="description" content="Hệ thống quản lý tập trung các mô phỏng vật lý 7.">
+    <meta name="keywords" content="vật lý, thí nghiệm ảo, khúc xạ, từ trường, âm thanh, giáo dục, lớp 7">
 
     <!-- Google Fonts -->
     <link
@@ -273,16 +272,16 @@
     <div class="blob blob-3"></div>
 
     <header>
-        <h1>Phòng Thí Nghiệm Vật Lý</h1>
+        <h1>MÔ PHỎNG VẬT LÝ 7</h1>
         <p class="subtitle">Khám phá thế giới vật lý thông qua các mô phỏng tương tác sinh động và trực quan.</p>
     </header>
 
     <main class="experiments-grid">
-        <!-- Thí nghiệm Khúc xạ Ánh sáng -->
-        <a href="Khuc_xa/index.html" class="experiment-card card-refraction">
-            <div class="icon-container">🌈</div>
-            <h2>Khúc xạ Ánh sáng</h2>
-            <p class="description">Khám phá hiện tượng bẻ cong của tia sáng khi đi qua các môi trường khác nhau.</p>
+        <!-- Mô phỏng Tốc độ và Đồ thị (S-T) -->
+        <a href="./mo-phong-toc-do/index.html" class="experiment-card card-reflection">
+            <div class="icon-container">📈</div>
+            <h2>Mô phỏng Tốc độ và Đồ thị</h2>
+            <p class="description">Khám phá mối liên hệ giữa không gian, tốc độ, thời gian và xe cộ.</p>
             <div class="btn-launch">
                 Bắt đầu thí nghiệm
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
@@ -293,12 +292,26 @@
             </div>
         </a>
 
-        <!-- Thí nghiệm Ô nhiễm Tiếng ồn -->
-        <a href="O_nhiem_tieng_on/index.html" class="experiment-card card-noise">
+        <!-- Phản xạ khuếch tán -->
+        <a href="./phan-xa-khuech-tan/index.html" class="experiment-card card-diffuse">
+            <div class="icon-container">✨</div>
+            <h2>Phản xạ ánh sáng</h2>
+            <p class="description">Quan sát hiện tượng phản xạ ánh sáng trên các bề mặt nhám và tán xạ.</p>
+            <div class="btn-launch">
+                Bắt đầu thí nghiệm
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </div>
+        </a>
+
+        <!-- Sự truyền âm -->
+        <a href="./su-truyen-am/index.html" class="experiment-card card-magnetic">
             <div class="icon-container">🔊</div>
-            <h2>Ô nhiễm Tiếng ồn</h2>
-            <p class="description">Phân tích tác động của âm thanh và các biện pháp giảm thiểu tiếng ồn trong đô thị.
-            </p>
+            <h2>Sự truyền âm</h2>
+            <p class="description">Nghiên cứu quá trình lan truyền của sóng âm trong các môi trường vật chất.</p>
             <div class="btn-launch">
                 Bắt đầu thí nghiệm
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
@@ -309,41 +322,11 @@
             </div>
         </a>
 
-        <!-- Thí nghiệm Phản xạ Âm -->
-        <a href="Phan_xa_am/index.html" class="experiment-card card-reflection">
-            <div class="icon-container">🦇</div>
-            <h2>Phản xạ Âm</h2>
-            <p class="description">Tìm hiểu cách âm thanh dội lại khi gặp vật cản và ứng dụng của sóng âm.</p>
-            <div class="btn-launch">
-                Bắt đầu thí nghiệm
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-            </div>
-        </a>
-
-        <!-- Thí nghiệm Từ trường -->
-        <a href="Thi_Nghiem_Tu_Truong_Hoan_Thien/index.html" class="experiment-card card-magnetic">
+        <!-- Từ trường -->
+        <a href="./tu-truong/index.html" class="experiment-card card-refraction">
             <div class="icon-container">🧲</div>
             <h2>Từ trường</h2>
-            <p class="description">Quan sát các đường sức từ và cách la bàn định hướng trong không gian.</p>
-            <div class="btn-launch">
-                Bắt đầu thí nghiệm
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-            </div>
-        </a>
-
-        <!-- Thí nghiệm Phản xạ khuếch tán -->
-        <a href="./Phan_xa_khuyech_tan/index.html" class="experiment-card card-diffuse">
-            <div class="icon-container">✨</div>
-            <h2>Phản xạ khuếch tán</h2>
-            <p class="description">Quan sát hiện tượng phản xạ ánh sáng trên các bề mặt nhám và tán xạ.</p>
+            <p class="description">Quan sát các đường sức từ và không gian tương tác xung quanh nam châm.</p>
             <div class="btn-launch">
                 Bắt đầu thí nghiệm
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
@@ -359,14 +342,6 @@
         <p>&copy; 2024 Virtual Physics Lab. Designed for Interactive Learning.</p>
     </footer>
 
-    <!-- Giữ nguyên cấu trúc ẩn để dự phòng CSS cũ nếu cần -->
-    <div class="buttons-container" style="display: none;">
-        <a href="Khuc_xa/index.html"></a>
-        <a href="O_nhiem_tieng_on/index.html"></a>
-        <a href="Phan_xa_am/index.html"></a>
-        <a href="Thi_Nghiem_Tu_Truong_Hoan_Thien/index.html"></a>
-        <a href="./Phan_xa_khuyech_tan/index.html" class="btn">Thí nghiệm 5: Phản xạ ánh sáng & Khuếch tán</a>
-    </div>
 </body>
 
 </html>

@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thí nghiệm ảo: Tốc độ và Chuyển động</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #f8fafc;
+            --bg-panel: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --road-bg: #cbd5e1;
+            --lane-dash: #ffffff;
+            --blue-car: #3b82f6;
+            --red-car: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* --- HEADER --- */
+        .header {
+            text-align: center;
+            padding: 10px 0;
+            background: white;
+            border-bottom: 1px solid var(--border);
+            z-index: 10;
+        }
+
+        .header h1 {
+            font-size: 1.3rem;
+            margin: 0;
+            color: #0f172a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .main-workspace {
+            display: flex;
+            flex: 1;
+            padding: 15px;
+            gap: 15px;
+            min-height: 0;
+        }
+
+        /* --- LEFT: SIMULATION AREA --- */
+        .sim-area {
+            flex: 1;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .stopwatch {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #0f172a;
+            color: var(--success);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            padding: 8px 15px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            border: 2px solid #334155;
+            z-index: 100;
+            letter-spacing: 1px;
+        }
+
+        .panel-toggle-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: 1px solid var(--border);
+            color: #475569;
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: var(--shadow);
+            transition: all 0.2s;
+        }
+
+        .panel-toggle-btn:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .camera-view {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .road-track {
+            position: absolute;
+            left: 0;
+            height: 320px;
+            width: 10500px;
+            display: flex;
+            flex-direction: column;
+            will-change: transform;
+        }
+
+        .landscape {
+            height: 50px;
+            display: flex;
+            align-items: flex-end;
+            padding-left: 50px;
+            gap: 50px;
+            font-size: 2.2rem;
+            overflow: hidden;
+            width: 100%;
+            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+        }
+
+        .landscape span {
+            text-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+            display: inline-block;
+            transform-origin: bottom center;
+        }
+
+        .road {
+            height: 220px;
+            background: var(--road-bg);
+            border-top: 8px solid #94a3b8;
+            border-bottom: 8px solid #94a3b8;
+            position: relative;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.08);
+            width: 100%;
+        }
+
+        .lane-divider {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background-image: linear-gradient(to right, var(--lane-dash) 50%, transparent 50%);
+            background-size: 60px 100%;
+            transform: translateY(-50%);
+            opacity: 0.8;
+        }
+
+        .lane {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 110px;
+        }
+
+        .lane-top {
+            top: 0;
+        }
+
+        .lane-bottom {
+            top: 110px;
+        }
+
+        .markers-layer {
+            position: absolute;
+            top: 0;
+            left: 50px;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .marker {
+            position: absolute;
+            top: -15px;
+            bottom: -15px;
+            width: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            transition: all 0.2s;
+        }
+
+        .marker::after {
+            content: attr(data-label);
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #475569;
+            background: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid #cbd5e1;
+            transition: all 0.2s;
+        }
+
+        .marker.lit {
+            background: var(--success);
+            box-shadow: 0 0 12px var(--success);
+        }
+
+        .marker.lit::after {
+            color: white;
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+
+
+        /* CARS */
+        .car {
+            position: absolute;
+            width: 100px;
+            height: 50px;
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            z-index: 50;
+            transform: translate(-50%, -50%);
+            transition: box-shadow 0.2s, transform 0.1s;
+        }
+
+        .car.dragging {
+            cursor: grabbing;
+            z-index: 9999 !important;
+            transform: scale(1.1) translate(-45%, -45%);
+        }
+
+        .car.selected {
+            z-index: 60;
+        }
+
+        .car-blue.selected {
+            box-shadow: 0 0 20px 5px rgba(59, 130, 246, 0.9);
+        }
+
+        .car-red.selected {
+            box-shadow: 0 0 20px 5px rgba(239, 68, 68, 0.9);
+        }
+
+        .car::before {
+            content: '';
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            width: 25px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 4px;
+        }
+
+        .car::after {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 5px;
+            bottom: 5px;
+            width: 15px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        .car-blue {
+            background: linear-gradient(135deg, #60a5fa, #2563eb);
+        }
+
+        .car-red {
+            background: linear-gradient(135deg, #f87171, #dc2626);
+        }
+
+        .flying {
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), left 0.4s cubic-bezier(0.25, 1, 0.5, 1), top 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
+            z-index: 1000 !important;
+        }
+
+        /* --- RIGHT: DATA PANEL & GRAPH --- */
+        .side-panel-wrapper {
+            width: 380px;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .side-panel-wrapper.collapsed {
+            width: 0;
+            margin-left: -15px;
+            opacity: 0;
+        }
+
+        .side-panel {
+            width: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+            overflow: hidden;
+            padding-right: 4px;
+            height: 100%;
+        }
+
+        /* Custom scrollbar for data-card */
+        .card-body::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .card-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .card-body::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .card-body::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Car Selector Tabs */
+        .car-tabs {
+            display: flex;
+            gap: 8px;
+            flex: 0 0 auto;
+        }
+
+        .car-tab {
+            flex: 1;
+            padding: 8px 0;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            cursor: pointer;
+            background: white;
+            color: #64748b;
+            box-shadow: var(--shadow);
+            transition: all 0.2s;
+        }
+
+        .car-tab.blue {
+            border-color: #cbd5e1;
+        }
+
+        .car-tab.red {
+            border-color: #cbd5e1;
+        }
+
+        .car-tab.blue.active {
+            background: #eff6ff;
+            border-color: var(--blue-car);
+            color: var(--blue-car);
+        }
+
+        .car-tab.red.active {
+            background: #fef2f2;
+            border-color: var(--red-car);
+            color: var(--red-car);
+        }
+
+        .data-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            flex: 0 0 auto;
+            max-height: 55%;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .data-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #e2e8f0;
+            border-bottom: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 12px 12px 0 0;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #334155;
+            cursor: pointer;
+        }
+
+        .data-toggle-btn {
+            background: transparent;
+            border: none;
+            font-size: 0.9rem;
+            color: #64748b;
+            cursor: pointer;
+            padding: 4px;
+            transition: all 0.2s;
+        }
+
+        .data-toggle-btn:hover {
+            color: #0f172a;
+        }
+
+        .card-body {
+            padding: 6px 10px;
+            transition: padding 0.3s;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .card-body.collapsed {
+            display: none;
+        }
+
+        /* Modes Tabs */
+        .tabs {
+            display: flex;
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 4px 0;
+            /* Reduced padding */
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #64748b;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+
+        .tab.active {
+            background: white;
+            color: #0f172a;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Inputs (Shrank paddings/margins) */
+        .input-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            padding: 4px 8px;
+            /* Giảm padding tối đa */
+            border-radius: 6px;
+            margin-bottom: 4px;
+            /* Giảm margin tối đa */
+            transition: all 0.2s;
+        }
+
+        .input-row.computed {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            box-shadow: inset 0 0 8px rgba(16, 185, 129, 0.05);
+        }
+
+        .input-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .input-label span.math {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1rem;
+            color: #0f172a;
+        }
+
+        .input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .input-wrap input {
+            width: 55px;
+            /* Shrink width purely */
+            padding: 2px 4px;
+            /* Giảm max */
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.95rem;
+            /* Giảm font-size */
+            text-align: right;
+            font-weight: 700;
+            color: #0f172a;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .input-wrap input:focus {
+            border-color: var(--blue-car);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .input-row.computed input {
+            background: transparent;
+            border-color: transparent;
+            color: var(--success);
+            font-size: 1.1rem;
+            padding: 2px 0;
+            pointer-events: none;
+        }
+
+        .input-wrap .unit {
+            color: #64748b;
+            font-size: 0.8rem;
+            font-weight: 600;
+            width: 25px;
+        }
+
+        .stat-line {
+            display: flex;
+            justify-content: space-between;
+            font-family: monospace;
+            font-size: 0.85rem;
+            /* Shrink font */
+            margin-top: 4px;
+            color: #475569;
+            background: #f1f5f9;
+            padding: 6px 10px;
+            border-radius: 6px;
+        }
+
+        .stat-line strong {
+            color: #0f172a;
+        }
+
+        /* Graph Card */
+        .graph-container {
+            flex: 1;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .graph-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #1e293b;
+            padding: 0 10px;
+            height: 36px;
+            /* Shrink title bar */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 800;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border);
+            flex: 0 0 auto;
+        }
+
+        .graph-toggle-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #64748b;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .graph-toggle-btn:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .graph-inner {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: flex 0.3s ease, opacity 0.3s ease;
+        }
+
+        .graph-inner.collapsed {
+            flex: 0 0 0;
+            opacity: 0;
+            border: none;
+        }
+
+        .canvas-wrapper {
+            flex: 1;
+            position: relative;
+            padding: 8px;
+            background: #fafafa;
+            cursor: zoom-in;
+            /* Indicate clikability for full screen */
+        }
+
+        .canvas-wrapper:hover {
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Modal FULLSCREEN GRAPH */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.85);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-card {
+            width: 85vw;
+            height: 85vh;
+            background: white;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 25px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: none;
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .modal-title {
+            margin: 0 0 15px 0;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        .modal-canvas-wrapper {
+            flex: 1;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            position: relative;
+        }
+
+        /* --- BOTTOM: CONTROLS & GARAGE --- */
+        .footer-tools {
+            height: 80px;
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            justify-content: space-between;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: var(--shadow);
+            outline: none;
+        }
+
+        .btn-icon:hover {
+            transform: scale(1.08);
+        }
+
+        .btn-icon:active {
+            transform: scale(0.95);
+        }
+
+        .btn-play {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-play:hover {
+            background: #059669;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-stop {
+            background: var(--red-car);
+            color: white;
+            display: none;
+        }
+
+        .btn-stop.active {
+            display: flex;
+        }
+
+        .btn-reset {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .btn-reset:hover {
+            background: #cbd5e1;
+            color: #1e293b;
+        }
+
+        .garage-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            padding: 8px 25px;
+            border-radius: 12px;
+        }
+
+        .garage-label {
+            font-weight: 700;
+            color: var(--text-muted);
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        .slot {
+            width: 110px;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 10px;
+            position: relative;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Nút Trang chủ cố định -->
+    <a href="../index.html" class="btn-home" style="position: fixed; top: 15px; left: 15px; z-index: 999999; display: inline-flex; align-items: center; justify-content: center; background: #ffffff; color: #1e293b; text-decoration: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid #cbd5e1; font-family: 'Inter', sans-serif; font-size: 14px; transition: all 0.2s ease;">
+        <span style="font-size: 1.2rem; margin-right: 6px;">🏠</span> Trang chủ
+    </a>
+
+    <div class="header">
+        <h1>Mô phỏng Giao thông & Đồ thị Quãng đường - Thời gian (s - t)</h1>
+    </div>
+
+    <div class="main-workspace">
+        <!-- LEFT SIMULATION -->
+        <div class="sim-area" id="sim-area">
+            <div class="stopwatch" id="stopwatch">00:00.00</div>
+            <!-- SIDEBAR TOGGLE -->
+            <button id="toggle-sidebar" class="panel-toggle-btn" title="Ẩn/Hiện Bảng Thiết lập">❯❯</button>
+
+            <div class="camera-view" id="camera-view">
+                <div class="road-track" id="road-track">
+                    <div class="landscape" id="landscape-top"></div>
+                    <div class="road" id="road">
+                        <div class="markers-layer" id="markers"></div>
+                        <div class="lane lane-top" id="lane-1"></div>
+                        <div class="lane-divider"></div>
+                        <div class="lane lane-bottom" id="lane-2"></div>
+                    </div>
+                    <div class="landscape" id="landscape-bot"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT DATA PANEL & GRAPH -->
+        <div class="side-panel-wrapper" id="side-panel-wrapper">
+            <div class="side-panel">
+
+                <!-- Data Editor with specific shrink trigger -->
+                <div class="data-card" id="data-card">
+                    <div class="data-card-header" id="toggle-data-header" title="Thu gọn/Mở rộng bảng nhập liệu">
+                        <span>THIẾT LẬP XE</span>
+                        <button id="toggle-data" class="data-toggle-btn">▲</button>
+                    </div>
+                    <div class="card-body" id="panel-body">
+                        <!-- Dynamic form goes here -->
+                    </div>
+                </div>
+
+                <!-- Graph Canvas -->
+                <div class="graph-container" id="graph-container">
+                    <div class="graph-title">
+                        <span id="graph-title-text" style="flex:1; text-align:center;">Đồ thị s - t</span>
+                        <!-- GRAPH TOGGLE -->
+                        <button id="toggle-graph" class="graph-toggle-btn" title="Ẩn/Hiện Đồ thị">▼</button>
+                    </div>
+                    <div class="graph-inner" id="graph-inner">
+                        <div class="canvas-wrapper" id="canvas-wrapper" title="Nhấn vào để phóng to toàn màn hình">
+                            <canvas id="graphCanvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL FULLSCREEN GRAPH -->
+    <div class="modal-overlay" id="graph-modal">
+        <div class="modal-card">
+            <button class="modal-close-btn" id="modal-close-btn">✖</button>
+            <h2 class="modal-title" id="modal-title">Đồ thị s - t Toàn Cảnh</h2>
+            <div class="modal-canvas-wrapper" id="modal-canvas-wrapper">
+                <canvas id="modalCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM CONTROLS & GARAGE -->
+    <div class="footer-tools">
+        <div class="controls">
+            <!-- Strict Icons Only -->
+            <button class="btn-icon btn-play" id="btn-play" title="Bắt đầu chạy">▶</button>
+            <button class="btn-icon btn-stop" id="btn-stop" title="Tạm dừng">■</button>
+            <button class="btn-icon btn-reset" id="btn-reset" title="Làm lại vị trí">↺</button>
+        </div>
+
+        <div class="garage-area" id="garage">
+            <div class="garage-label">Kho Xe:</div>
+            <div class="slot" id="slot-blue">
+                <div class="car car-blue" id="car-blue">XANH</div>
+            </div>
+            <div class="slot" id="slot-red">
+                <div class="car car-red" id="car-red">ĐỎ</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. SETTINGS & GLOBALS ---
+        const SCALE = 10;
+        const START_OFFSET = 50;
+        const MAX_DIST = 1000;
+
+        const cameraView = document.getElementById('camera-view');
+        const roadTrack = document.getElementById('road-track');
+        const garage = document.getElementById('garage');
+        const markersContainer = document.getElementById('markers');
+        const stopwatchEl = document.getElementById('stopwatch');
+        const panelBody = document.getElementById('panel-body');
+        const btnPlay = document.getElementById('btn-play');
+        const btnStop = document.getElementById('btn-stop');
+
+        const canvasWrapper = document.getElementById('canvas-wrapper');
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        const graphTitleText = document.getElementById('graph-title-text');
+
+        const modalOverlay = document.getElementById('graph-modal');
+        const modalCanvas = document.getElementById('modalCanvas');
+        const modalCtx = modalCanvas.getContext('2d');
+        const modalCanvasWrapper = document.getElementById('modal-canvas-wrapper');
+        const modalTitle = document.getElementById('modal-title');
+
+        let isModalOpen = false;
+
+        let isRunning = false;
+        let globalTime = 0;
+        let lastTime = 0;
+        let animFrameId = null;
+        let selectedCarId = 'car-blue';
+        let roadScrollX = 0;
+
+        // Car Data Models
+        const cars = {
+            'car-blue': {
+                id: 'car-blue', colorHex: '#3b82f6', cssClass: 'blue', tabId: 'tab-blue', name: 'ĐỒ THỊ XE XANH',
+                el: document.getElementById('car-blue'), slot: document.getElementById('slot-blue'),
+                targetLane: 1, laneEl: document.getElementById('lane-1'),
+                onRoad: false, mode: 1,
+                S: 50, T: 10, V: 5,
+                startX: 0, currentX: 0,
+                traveledDistance: 0, timeTaken: 0, finished: false,
+                dataPoints: []
+            },
+            'car-red': {
+                id: 'car-red', colorHex: '#ef4444', cssClass: 'red', tabId: 'tab-red', name: 'ĐỒ THỊ XE ĐỎ',
+                el: document.getElementById('car-red'), slot: document.getElementById('slot-red'),
+                targetLane: 2, laneEl: document.getElementById('lane-2'),
+                onRoad: false, mode: 1,
+                S: 40, T: 5, V: 8,
+                startX: 0, currentX: 0,
+                traveledDistance: 0, timeTaken: 0, finished: false,
+                dataPoints: []
+            }
+        };
+
+        // --- 2. ENVIRONMENT INITS & UI TOGGLES ---
+        function generateTrees() {
+            let trees1 = '', trees2 = '';
+            const t = ['🌲', '🌳', '🌲', '🌳', '🌴'];
+            for (let i = 0; i < 200; i++) {
+                trees1 += `<span>${t[Math.floor(Math.random() * t.length)]}</span>`;
+                trees2 += `<span>${t[Math.floor(Math.random() * t.length)]}</span>`;
+            }
+            document.getElementById('landscape-top').innerHTML = trees1;
+            document.getElementById('landscape-bot').innerHTML = trees2;
+        }
+
+        function initMarkers() {
+            for (let i = 0; i <= MAX_DIST; i += 5) {
+                const mk = document.createElement('div');
+                mk.className = 'marker';
+                mk.style.left = (i * SCALE) + 'px';
+                mk.setAttribute('data-pos', i);
+                if (i === 0) {
+                    mk.setAttribute('data-label', '🏁 0m'); // Thêm vạch kẻ và nhãn 0m rõ nét
+                    mk.style.background = '#0f172a';
+                    mk.style.width = '6px';
+                    mk.style.zIndex = '20';
+                } else if (i % 10 === 0) {
+                    mk.setAttribute('data-label', '⛳ ' + i + 'm'); // Lá cờ xanh
+                } else {
+                    mk.setAttribute('data-label', '');
+                }
+                markersContainer.appendChild(mk);
+            }
+        }
+        generateTrees();
+        initMarkers();
+
+        function formatTime(s) {
+            let m = Math.floor(s / 60);
+            let sec = Math.floor(s % 60);
+            let ms = Math.floor((s % 1) * 100);
+            return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+        }
+        function uiUpdateStopwatch() {
+            stopwatchEl.textContent = formatTime(globalTime);
+        }
+
+        // Setup Resize Observers for responsive Camera and Canvas
+        function safeResizeCanvas() {
+            if (canvasWrapper) {
+                canvas.width = canvasWrapper.clientWidth;
+                canvas.height = canvasWrapper.clientHeight;
+            }
+            if (isModalOpen && modalCanvasWrapper) {
+                modalCanvas.width = modalCanvasWrapper.clientWidth;
+                modalCanvas.height = modalCanvasWrapper.clientHeight;
+            }
+            drawGraph();
+        }
+
+        const resizeObserver = new ResizeObserver(() => {
+            updateCamera();
+            safeResizeCanvas();
+        });
+        resizeObserver.observe(cameraView);
+        resizeObserver.observe(canvasWrapper);
+        resizeObserver.observe(modalCanvasWrapper);
+
+        // Sidebar Toggle
+        const toggleSidebarBtn = document.getElementById('toggle-sidebar');
+        const sidePanelWrapper = document.getElementById('side-panel-wrapper');
+        toggleSidebarBtn.addEventListener('click', () => {
+            sidePanelWrapper.classList.toggle('collapsed');
+            if (sidePanelWrapper.classList.contains('collapsed')) {
+                toggleSidebarBtn.textContent = '❮❮';
+                toggleSidebarBtn.setAttribute('title', 'Hiện Bảng Thiết Lập');
+            } else {
+                toggleSidebarBtn.textContent = '❯❯';
+                toggleSidebarBtn.setAttribute('title', 'Ẩn Bảng Thiết Lập');
+            }
+        });
+
+        // Graph Toggle
+        const toggleGraphBtn = document.getElementById('toggle-graph');
+        const graphInner = document.getElementById('graph-inner');
+        toggleGraphBtn.addEventListener('click', () => {
+            graphInner.classList.toggle('collapsed');
+            if (graphInner.classList.contains('collapsed')) {
+                toggleGraphBtn.textContent = '▲';
+            } else {
+                toggleGraphBtn.textContent = '▼';
+            }
+        });
+
+        // Data Panel Collapse/Accordion Toggle
+        const toggleDataHeader = document.getElementById('toggle-data-header');
+        const toggleDataBtn = document.getElementById('toggle-data');
+        toggleDataHeader.addEventListener('click', () => {
+            panelBody.classList.toggle('collapsed');
+            const dataCard = document.getElementById('data-card');
+
+            if (panelBody.classList.contains('collapsed')) {
+                toggleDataBtn.textContent = '▼';
+                dataCard.style.flex = '0 0 auto';
+            } else {
+                toggleDataBtn.textContent = '▲';
+                dataCard.style.flex = '1';
+            }
+        });
+
+        // Modal Fullscreen Toggle
+        canvasWrapper.addEventListener('click', () => {
+            modalOverlay.classList.add('active');
+            isModalOpen = true;
+            safeResizeCanvas();
+        });
+        document.getElementById('modal-close-btn').addEventListener('click', () => {
+            modalOverlay.classList.remove('active');
+            isModalOpen = false;
+        });
+
+        // --- 3. DRAG AND DROP ---
+        let draggingCar = null;
+        let dragOffsetX = 0, dragOffsetY = 0;
+        let isClick = false;
+
+        Object.values(cars).forEach(car => {
+            car.el.addEventListener('mousedown', (e) => {
+                if (isRunning && car.onRoad) return;
+
+                draggingCar = car;
+                isClick = true;
+                selectCar(car.id);
+
+                const rect = car.el.getBoundingClientRect();
+                dragOffsetX = e.clientX - (rect.left + rect.width / 2);
+                dragOffsetY = e.clientY - (rect.top + rect.height / 2);
+
+                if (!car.onRoad) {
+                    car.el.style.left = (rect.left + rect.width / 2) + 'px';
+                    car.el.style.top = (rect.top + rect.height / 2) + 'px';
+                    document.body.appendChild(car.el);
+                }
+
+                car.el.classList.add('dragging');
+            });
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!draggingCar) return;
+            isClick = false;
+            draggingCar.el.style.left = (e.clientX - dragOffsetX) + 'px';
+            draggingCar.el.style.top = (e.clientY - dragOffsetY) + 'px';
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if (!draggingCar) return;
+            draggingCar.el.classList.remove('dragging');
+
+            if (!isClick) {
+                const roadRect = cameraView.getBoundingClientRect();
+                const dropX = e.clientX;
+                const dropY = e.clientY;
+
+                if (dropY >= roadRect.top - 20 && dropY <= roadRect.bottom + 20) {
+                    if (!draggingCar.onRoad) {
+                        draggingCar.laneEl.appendChild(draggingCar.el);
+                        draggingCar.onRoad = true;
+                    }
+
+                    let absoluteViewportX = dropX - roadRect.left;
+                    let pixelX = absoluteViewportX + roadScrollX - START_OFFSET;
+                    let logicalMeters = Math.round(pixelX / SCALE);
+
+                    if (logicalMeters < 0) logicalMeters = 0;
+                    if (logicalMeters > MAX_DIST) logicalMeters = MAX_DIST;
+
+                    draggingCar.startX = logicalMeters;
+                    syncCarVisualPosition(draggingCar);
+
+                } else {
+                    flyToGarage(draggingCar);
+                }
+            }
+            draggingCar = null;
+            resetGraphPoints();
+        });
+
+        function syncCarVisualPosition(car) {
+            car.currentX = car.startX + car.traveledDistance;
+            car.el.style.left = (START_OFFSET + car.currentX * SCALE) + 'px';
+            car.el.style.top = '55px';
+        }
+
+        function flyToGarage(car) {
+            const rect = car.el.getBoundingClientRect();
+            document.body.appendChild(car.el);
+            car.el.style.left = (rect.left + rect.width / 2) + 'px';
+            car.el.style.top = (rect.top + rect.height / 2) + 'px';
+
+            car.el.getBoundingClientRect();
+            car.el.classList.add('flying');
+
+            const slotRect = car.slot.getBoundingClientRect();
+            car.el.style.left = (slotRect.left + slotRect.width / 2) + 'px';
+            car.el.style.top = (slotRect.top + slotRect.height / 2) + 'px';
+
+            car.onRoad = false;
+            car.startX = 0;
+            car.traveledDistance = 0;
+            car.timeTaken = 0;
+            car.finished = false;
+            car.dataPoints = []; // Nhanh chóng xoá bộ nhớ đường biểu diễn
+
+            // KÍCH HOẠT LỆNH HARD RESET DỰA TRÊN THAO TÁC CẤT XE
+            triggerStop();
+            globalTime = 0;
+            lastTime = 0;
+            uiUpdateStopwatch();
+            updateRealtimePanel();
+
+            // Ép xóa sạch ngay khung vẽ để làm mới hoàn toàn
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (isModalOpen) modalCtx.clearRect(0, 0, modalCanvas.width, modalCanvas.height);
+            drawGraph();
+
+            setTimeout(() => {
+                car.el.classList.remove('flying');
+                car.slot.appendChild(car.el);
+                car.el.style.left = '55px';
+                car.el.style.top = '30px';
+                resetGraphPoints();
+            }, 400);
+        }
+
+        // --- 4. EXPLICIT SELECTION & 2-FIXED 1-COMPUTED ---
+        // --- 4. EXPLICIT SELECTION & 2-FIXED 1-COMPUTED ---
+        window.selectCar = function (id) {
+            // Keep for visual highlight on dragging, but no longer change panel exclusively.
+            Object.values(cars).forEach(c => { c.el.classList.remove('selected'); });
+            if (cars[id]) cars[id].el.classList.add('selected');
+        }
+
+        function recalculatePhysics(car) {
+            if (car.mode === 1) car.V = car.S / car.T;
+            if (car.mode === 2) car.S = car.V * car.T;
+            if (car.mode === 3) car.T = car.S / car.V;
+            drawGraph();
+        }
+
+        function buildPanelUI() {
+            let html = '';
+            Object.values(cars).forEach(car => {
+                let htmlTabs = `<div class="tabs" style="margin-bottom: 4px;">
+                    <div class="tab ${car.mode === 1 ? 'active' : ''}" onclick="setMode('${car.id}', 1)" style="color:${car.mode===1?'#000':'#64748b'}; padding: 2px;">Tính V</div>
+                    <div class="tab ${car.mode === 2 ? 'active' : ''}" onclick="setMode('${car.id}', 2)" style="color:${car.mode===2?'#000':'#64748b'}; padding: 2px;">Tính S</div>
+                    <div class="tab ${car.mode === 3 ? 'active' : ''}" onclick="setMode('${car.id}', 3)" style="color:${car.mode===3?'#000':'#64748b'}; padding: 2px;">Tính t</div>
+                </div>`;
+
+                let formHtml = '';
+                const mS = `<span class="math">S</span>`;
+                const mT = `<span class="math">t</span>`;
+                const mV = `<span class="math">v</span>`;
+                
+                let fields = [];
+                if (car.mode === 1) fields = [
+                    [`Cố định Quãng đư. ${mS}`, 'inp-s-'+car.id, 'm', car.S, false],
+                    [`Cố định Thời gian ${mT}`, 'inp-t-'+car.id, 's', car.T, false],
+                    [`Tự tính Vận tốc ${mV}`, 'inp-v-'+car.id, 'm/s', car.V, true]
+                ];
+                else if (car.mode === 2) fields = [
+                    [`Cố định Vận tốc ${mV}`, 'inp-v-'+car.id, 'm/s', car.V, false],
+                    [`Cố định Thời gian ${mT}`, 'inp-t-'+car.id, 's', car.T, false],
+                    [`Tự tính Quãng đư. ${mS}`, 'inp-s-'+car.id, 'm', car.S, true]
+                ];
+                else fields = [
+                    [`Cố định Vận tốc ${mV}`, 'inp-v-'+car.id, 'm/s', car.V, false],
+                    [`Cố định Quãng đư. ${mS}`, 'inp-s-'+car.id, 'm', car.S, false],
+                    [`Tự tính Thời gian ${mT}`, 'inp-t-'+car.id, 's', car.T, true]
+                ];
+                
+                fields.forEach(f => {
+                    const [label, id, unit, val, isComputed] = f;
+                    formHtml += `
+                        <div class="input-row ${isComputed ? 'computed' : ''}" style="padding: 2px 6px; margin-bottom: 2px;">
+                            <div class="input-label" style="font-size: 0.8rem;">${label}</div>
+                            <div class="input-wrap">
+                                <input type="number" id="${id}" value="${val.toFixed(isComputed ? 2 : 0)}" min="0.1" step="0.5" ${isComputed ? 'disabled readonly' : ''} style="width: 55px;">
+                                <span class="unit" style="font-size: 0.75rem;">${unit}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `<div style="border-left: 4px solid ${car.colorHex}; padding-left: 6px; margin-bottom: 8px;">
+                    <div style="font-weight: 800; color: ${car.colorHex}; font-size: 0.85rem; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
+                        <span>${car.name.replace('ĐỒ THỊ ', '')}</span>
+                        <div style="width: 15px; height: 15px; background: ${car.colorHex}; border-radius: 50%;"></div>
+                    </div>
+                    ${htmlTabs}
+                    ${formHtml}
+                    <div class="stat-line" style="margin-top:2px; padding: 4px;"><span>Quãng đ. <strong id="prog-s-${car.id}">${car.traveledDistance.toFixed(1)} m</strong></span><span>Tgian: <strong id="prog-t-${car.id}">${car.timeTaken.toFixed(1)} s</strong></span></div>
+                </div>`;
+            });
+            panelBody.innerHTML = html;
+
+            Object.values(cars).forEach(car => {
+                ['inp-s-'+car.id, 'inp-t-'+car.id, 'inp-v-'+car.id].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el && !el.disabled) {
+                        el.addEventListener('input', (e) => {
+                            let val = parseFloat(e.target.value);
+                            if (isNaN(val) || val < 0.1) val = 0.1;
+                            if (id === 'inp-s-'+car.id) car.S = val;
+                            if (id === 'inp-t-'+car.id) car.T = val;
+                            if (id === 'inp-v-'+car.id) car.V = val;
+
+                            recalculatePhysics(car);
+
+                            if (car.mode === 1) document.getElementById('inp-v-'+car.id).value = car.V.toFixed(2);
+                            if (car.mode === 2) document.getElementById('inp-s-'+car.id).value = car.S.toFixed(2);
+                            if (car.mode === 3) document.getElementById('inp-t-'+car.id).value = car.T.toFixed(2);
+                        });
+                    }
+                });
+            });
+
+            graphTitleText.innerHTML = "SO SÁNH HAI XE";
+            graphTitleText.style.color = '#1e293b';
+            modalTitle.textContent = "PHÂN TÍCH VÀ SO SÁNH";
+            modalTitle.style.color = '#1e293b';
+        }
+
+        window.setMode = function (carId, m) {
+            if (!isRunning) {
+                cars[carId].mode = m;
+                recalculatePhysics(cars[carId]);
+                buildPanelUI();
+            }
+        }
+
+        function updateRealtimePanel() {
+            Object.values(cars).forEach(c => {
+                const ps = document.getElementById('prog-s-' + c.id);
+                const pt = document.getElementById('prog-t-' + c.id);
+                if (ps) ps.textContent = c.traveledDistance.toFixed(1) + ' m';
+                if (pt) pt.textContent = c.timeTaken.toFixed(1) + ' s';
+            });
+        }
+
+        // --- 5. GRAPH ENGINE ---
+        function resetGraphPoints() {
+            Object.values(cars).forEach(c => {
+                c.dataPoints = c.onRoad ? [{ t: 0, s: c.startX }] : [];
+            });
+            drawGraph();
+        }
+
+        // Shared render logic for canvases
+        function renderGraphToCtx(targetCtx, w, h) {
+            targetCtx.clearRect(0, 0, w, h);
+            if (w < 10 || h < 10) return;
+
+            const padding = { top: 20, right: 30, bottom: 40, left: 55 };
+            const drawW = w - padding.left - padding.right;
+            const drawH = h - padding.top - padding.bottom;
+
+            let maxT = 10;
+            let maxS = 40;
+
+            Object.values(cars).forEach(c => {
+               if (globalTime > maxT - 5) maxT = Math.ceil(globalTime / 5) * 5 + 5;
+               const cMaxT = Math.ceil(c.T / 5) * 5 + 5;
+               if (cMaxT > maxT) maxT = cMaxT;
+               const cMaxS = Math.ceil((c.startX + c.S) / 20) * 20 + 20;
+               if (cMaxS > maxS) maxS = cMaxS;
+            });
+
+            targetCtx.lineWidth = 1;
+            targetCtx.font = '11px monospace';
+
+            for (let i = 0; i <= maxT; i += 5) {
+                let px = padding.left + (i / maxT) * drawW;
+                targetCtx.strokeStyle = '#e2e8f0';
+                targetCtx.beginPath();
+                targetCtx.moveTo(px, padding.top);
+                targetCtx.lineTo(px, padding.top + drawH);
+                targetCtx.stroke();
+
+                targetCtx.fillStyle = '#64748b';
+                targetCtx.textAlign = 'center';
+                targetCtx.fillText(i + 's', px, padding.top + drawH + 15);
+            }
+
+            for (let i = 0; i <= maxS; i += 20) {
+                let py = padding.top + drawH - (i / maxS) * drawH;
+                targetCtx.strokeStyle = '#e2e8f0';
+                targetCtx.beginPath();
+                targetCtx.moveTo(padding.left, py);
+                targetCtx.lineTo(padding.left + drawW, py);
+                targetCtx.stroke();
+
+                targetCtx.fillStyle = '#64748b';
+                targetCtx.textAlign = 'right';
+                targetCtx.fillText(i + 'm', padding.left - 5, py + 4);
+            }
+
+            // Vẽ 2 trục toạ độ
+            targetCtx.strokeStyle = '#1e293b';
+            targetCtx.lineWidth = 2;
+            targetCtx.beginPath();
+            targetCtx.moveTo(padding.left, padding.top - 5);
+            targetCtx.lineTo(padding.left, padding.top + drawH);
+            targetCtx.lineTo(padding.left + drawW + 10, padding.top + drawH);
+            targetCtx.stroke();
+
+            // Vẽ mũi tên trục tung
+            targetCtx.beginPath();
+            targetCtx.moveTo(padding.left - 4, padding.top + 2);
+            targetCtx.lineTo(padding.left, padding.top - 5);
+            targetCtx.lineTo(padding.left + 4, padding.top + 2);
+            targetCtx.fill();
+
+            // Vẽ mũi tên trục hoành
+            targetCtx.beginPath();
+            targetCtx.moveTo(padding.left + drawW + 3, padding.top + drawH - 4);
+            targetCtx.lineTo(padding.left + drawW + 10, padding.top + drawH);
+            targetCtx.lineTo(padding.left + drawW + 3, padding.top + drawH + 4);
+            targetCtx.fill();
+
+            // Gắn nhãn O, s(m), t(s)
+            targetCtx.fillStyle = '#1e293b';
+            targetCtx.textAlign = 'right';
+            targetCtx.font = 'bold 12px sans-serif';
+            targetCtx.fillText('O(0,0)', padding.left - 5, padding.top + drawH + 15);
+
+            targetCtx.textAlign = 'left';
+            targetCtx.fillText('s(m)', padding.left + 8, padding.top + 5);
+            targetCtx.textAlign = 'right';
+            targetCtx.fillText('t(s)', padding.left + drawW + 5, padding.top + drawH - 10);
+
+            // Draw line for both cars
+            Object.values(cars).forEach(c => {
+                if (c.dataPoints.length > 0) {
+                    targetCtx.strokeStyle = c.colorHex;
+                    targetCtx.lineWidth = 3;
+                    targetCtx.lineJoin = 'round';
+                    targetCtx.beginPath();
+                    for (let i = 0; i < c.dataPoints.length; i++) {
+                        const pt = c.dataPoints[i];
+                        let px = padding.left + (pt.t / maxT) * drawW;
+                        let py = padding.top + drawH - (pt.s / maxS) * drawH;
+                        if (i === 0) targetCtx.moveTo(px, py);
+                        else targetCtx.lineTo(px, py);
+                    }
+                    targetCtx.stroke();
+                }
+            });
+        }
+
+        function drawGraph() {
+            // Draw on small panel
+            renderGraphToCtx(ctx, canvas.width, canvas.height);
+
+            // Draw on modal if open
+            if (isModalOpen) {
+                renderGraphToCtx(modalCtx, modalCanvas.width, modalCanvas.height);
+            }
+        }
+
+        // --- 6. ANIMATION & CAMERA SYSTEM ---
+        function updateCamera() {
+            let maxCurrentX = 0;
+            let roadHasActiveCars = false;
+            Object.values(cars).forEach(c => {
+                if (c.onRoad) {
+                    roadHasActiveCars = true;
+                    if (c.currentX > maxCurrentX) maxCurrentX = c.currentX;
+                }
+            });
+
+            if (!roadHasActiveCars) {
+                roadScrollX = 0;
+            } else {
+                let pixelPos = START_OFFSET + maxCurrentX * SCALE;
+                let viewWidth = cameraView.clientWidth;
+                let threshold = roadScrollX + viewWidth * 0.6;
+                // Important to account for smooth track adjusting with viewport Width changes
+                if (pixelPos > threshold) {
+                    roadScrollX = pixelPos - viewWidth * 0.6;
+                }
+                // Recalculate if container gets strictly wider than the scrolled offset
+                if (pixelPos < roadScrollX + viewWidth) {
+                    let minAllowedScroll = pixelPos - viewWidth * 0.8;
+                    if (roadScrollX > minAllowedScroll && minAllowedScroll > 0) {
+                        roadScrollX = minAllowedScroll;
+                    }
+                }
+            }
+            if (roadScrollX < 0) roadScrollX = 0;
+            roadTrack.style.transform = `translateX(-${roadScrollX}px)`;
+        }
+
+        function updateMarkersGlow() {
+            let maxCurrentX = 0;
+            Object.values(cars).forEach(c => {
+                if (c.onRoad && c.currentX > maxCurrentX) maxCurrentX = c.currentX;
+            });
+            const markersList = document.querySelectorAll('.marker');
+            markersList.forEach(m => {
+                const pos = parseFloat(m.getAttribute('data-pos'));
+                if (maxCurrentX >= pos) m.classList.add('lit');
+                else m.classList.remove('lit');
+            });
+        }
+
+        function loop(timestamp) {
+            if (!isRunning) return;
+            if (!lastTime) lastTime = timestamp;
+            const dt = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+
+            const activeCars = Object.values(cars).filter(c => c.onRoad);
+            let anyOngoing = false;
+
+            activeCars.forEach(car => {
+                if (!car.finished) {
+                    anyOngoing = true;
+                    car.timeTaken += dt;
+                    car.traveledDistance += car.V * dt;
+
+                    if (car.timeTaken >= car.T || car.traveledDistance >= car.S) {
+                        car.timeTaken = car.T;
+                        car.traveledDistance = car.S;
+                        car.finished = true;
+                    }
+                    syncCarVisualPosition(car);
+                }
+                car.dataPoints.push({ t: globalTime, s: car.currentX });
+            });
+
+            updateCamera();
+            updateMarkersGlow();
+            updateRealtimePanel();
+            drawGraph();
+
+            if (anyOngoing) {
+                globalTime += dt;
+                uiUpdateStopwatch();
+                animFrameId = requestAnimationFrame(loop);
+            } else {
+                triggerStop();
+            }
+        }
+
+        // --- 7. GLOBAL CONTROLS ---
+        btnPlay.addEventListener('click', () => {
+            if (isRunning) return;
+            const activeCount = Object.values(cars).filter(c => c.onRoad).length;
+            if (activeCount === 0) return alert("Vui lòng kéo xe từ kho lên đường chạy!");
+
+            let hasFinished = Object.values(cars).some(c => c.finished && c.onRoad);
+            if (hasFinished) {
+                globalTime = 0;
+                uiUpdateStopwatch();
+                Object.values(cars).forEach(c => {
+                    c.traveledDistance = 0;
+                    c.timeTaken = 0;
+                    c.finished = false;
+                    syncCarVisualPosition(c);
+                    c.dataPoints = [{ t: 0, s: c.startX }];
+                });
+                roadScrollX = 0;
+                updateCamera();
+                updateMarkersGlow();
+            }
+
+            isRunning = true;
+            btnPlay.style.display = 'none';
+            btnStop.classList.add('active');
+
+            lastTime = performance.now();
+            animFrameId = requestAnimationFrame(loop);
+        });
+
+        function triggerStop() {
+            isRunning = false;
+            btnStop.classList.remove('active');
+            btnPlay.style.display = 'flex';
+            if (animFrameId) {
+                cancelAnimationFrame(animFrameId);
+                animFrameId = null;
+            }
+        }
+
+        btnStop.addEventListener('click', () => {
+            triggerStop();
+            Object.values(cars).forEach(c => {
+                if (c.onRoad && c.dataPoints.length > 0) {
+                    c.dataPoints.push({ t: globalTime, s: c.currentX });
+                }
+            });
+            drawGraph();
+        });
+
+        function resetSimulationState() {
+            triggerStop();
+
+            // HARD RESET GLOBALS
+            globalTime = 0;
+            uiUpdateStopwatch(); // Đảm bảo đồng hồ hiện 00:00.00
+            roadScrollX = 0;
+            updateCamera();
+
+            // HARD RESET ALL CARS to 0
+            Object.values(cars).forEach(c => {
+                c.traveledDistance = 0;
+                c.timeTaken = 0;
+                c.finished = false;
+                
+                if (c.onRoad) {
+                    c.currentX = Math.max(0, c.startX);
+                    syncCarVisualPosition(c);
+                    // Start new datapoint cleanly
+                    c.dataPoints = [{ t: 0, s: c.startX }];
+                } else {
+                    c.dataPoints = [];
+                }
+            });
+
+            // Wipe specific context and redraw
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (isModalOpen) modalCtx.clearRect(0, 0, modalCanvas.width, modalCanvas.height);
+            
+            updateMarkersGlow();
+            updateRealtimePanel();
+            drawGraph();
+        }
+
+        const btnResetBtn = document.getElementById('btn-reset');
+        if (btnResetBtn) {
+            btnResetBtn.addEventListener('click', () => {
+                resetSimulationState();
+            });
+        }
+
+        // Initialize First UI State
+        buildPanelUI();
+        resetGraphPoints();
+
+    </script>
+</body>
+
+</html>
